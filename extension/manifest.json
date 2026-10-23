@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "TikTok / 抖音数据智能同步",
+  "description": "自动读取登录账号的关注与粉丝数据，按账号和日期同步 Google Sheets。",
+  "version": "0.4.2",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://www.douyin.com/*",
+    "https://douyin.com/*",
+    "https://www.tiktok.com/*",
+    "https://tiktok.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://script.google.com/*",
+    "https://script.googleusercontent.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "抖音数据同步"
+  },
+  "icons": {
+    "128": "logo.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.douyin.com/*",
+        "https://douyin.com/*",
+        "https://www.tiktok.com/*",
+        "https://tiktok.com/*"
+      ],
+      "js": [
+        "extract.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

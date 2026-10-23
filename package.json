@@ -1,0 +1,14 @@
+{
+  "name": "douyin-smart-sync",
+  "version": "0.4.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node scripts/check.js",
+    "build": "node scripts/build-apps-script.js"
+  },
+  "engines": {
+    "node": "^22.23.4 || ^24.22.1 || ^26.12.1"
+  }
+}

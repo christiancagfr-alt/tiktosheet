@@ -10,7 +10,7 @@ const element=text=>({textContent:text,getClientRects:()=>[{}],getAttribute:()=>
 function documentFixture(edit=true) {
  const following={...element('已关注'),previousElementSibling:element('3723')};
  const followers={...element('粉丝'),previousElementSibling:element('2956')};
- return {location:new URL(url),querySelectorAll:selector=> selector==='a[href]' ? [] : selector==='button,a,[role="button"]' ? (edit?[element('编辑主页')]:[]) : [following,followers]};
+ return {readyState:"complete",location:new URL(url),querySelectorAll:selector=> selector==='a[href]' ? [] : selector==='button,a,[role="button"]' ? (edit?[element('编辑主页')]:[]) : [following,followers]};
 }
 test('TikTok 地址标准化忽略语言参数并隔离平台',()=>{
  assert.equal(accountId(url),'tiktok:joanamartins6843');
@@ -25,7 +25,7 @@ test('本人主页编辑按钮可确认身份，普通他人主页不可',()=>{
 });
 test('内容脚本读取相邻数字标签，粉丝不会误读成点赞',()=>{
  let listener;
- const context={document:documentFixture(),location:new URL(url),DouyinExtract,chrome:{runtime:{id:"test-extension",onMessage:{addListener:fn=>listener=fn}}}};
+ const context={crypto:globalThis.crypto,document:documentFixture(),location:new URL(url),DouyinExtract,chrome:{runtime:{id:"test-extension",onMessage:{addListener:fn=>listener=fn}}}};
  vm.runInNewContext(readFileSync('extension/content.js','utf8'),context);
  let result;listener({type:'capture',settings:{}},{id:'test-extension'},r=>result=r);
  assert.equal(result.ok,true);assert.equal(result.data.following,3723);assert.equal(result.data.friends,2956);assert.equal(result.data.accountUrl,url.split('?')[0]);
@@ -37,6 +37,6 @@ test('TikTok 表格行定位和粉丝增长',()=>{
 });
 test('发现 TikTok 标签并在已有本人主页读取，不另开标签',async()=>{
  let query;
- const api={tabs:{query:async q=>{query=q;return [{id:1,url}];},sendMessage:async(id,m)=>m.type==='identify'?{ok:true,data:{accountUrl:url.split('?')[0]}}:{ok:true,data:{accountUrl:url.split('?')[0],following:3723,friends:2956}}}};
+ const api={tabs:{reload:async()=>{},get:async()=>({status:"complete"}),query:async q=>{query=q;return [{id:1,url}];},sendMessage:async(id,m)=>m.type==='identify'?{ok:true,data:{accountUrl:url.split('?')[0]}}:{ok:true,documentId:"new-document",data:{accountUrl:url.split('?')[0],following:3723,friends:2956}}}};
  const d=await readSignedInAccount(api,{});assert.equal(d.friends,2956);assert.ok(query.url.includes('https://www.tiktok.com/*'));
 });

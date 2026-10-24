@@ -10,7 +10,7 @@ $rules = @{
   CloudAccessKey = '(?:AKIA|ASIA)[A-Z0-9]{16}'
   GitHubToken = '(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})'
   LiteralConnectionKey = '#key=[a-fA-F0-9]{32,}'
-  LiteralSecret = '(?i)(?:SYNC_TOKEN|SYNC_KEY|password|api_key|access_token|private_key|token)s*[:=]s*["''][A-Za-z0-9_+/=-]{20,}["'']'
+  LiteralSecret = '(?i)(?:SYNC_TOKEN|SYNC_KEY|password|api_key|access_token|private_key|token)\s*[:=]\s*["''][A-Za-z0-9_+/=-]{20,}["'']'
   CredentialUrl = '(?i)(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|https?)://[^\s/:]+:[^\s/@]+@'
   Webhook = 'https://(?:hooks\.slack\.com/services|discord(?:app)?\.com/api/webhooks)/[^\s"'']+'
 }
@@ -44,5 +44,6 @@ foreach($file in $files) {
   }
 }
 $report = [pscustomobject]@{files=$inventory.Count;archives=@($files | Where-Object Extension -eq '.zip').Count;findings=@($findings);inventory=@($inventory)}
+New-Item -ItemType Directory -Path 'audit' -Force | Out-Null
 $report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath 'audit/secret-scan.json' -Encoding utf8
 [pscustomobject]@{files=$report.files;archives=$report.archives;candidateCount=$findings.Count;findings=@($findings)} | ConvertTo-Json -Depth 5

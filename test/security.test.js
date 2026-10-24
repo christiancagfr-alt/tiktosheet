@@ -17,7 +17,7 @@ test('请求字段白名单及反射授权码脱敏',async()=>{
  }),error=>!error.message.includes(key)&&error.message.includes('[授权码已隐藏]'));
 });
 test('内容脚本拒绝外部和网页标签来源消息',()=>{
- let handler,calls=0;const context={chrome:{runtime:{id:'ext',onMessage:{addListener:f=>handler=f}}},DouyinExtract:{selfUrl:()=>{calls++;return null;}},document:{}};
+ let handler,calls=0;const context={crypto:globalThis.crypto,chrome:{runtime:{id:'ext',onMessage:{addListener:f=>handler=f}}},DouyinExtract:{selfUrl:()=>{calls++;return null;}},document:{}};
  vm.runInNewContext(readFileSync('extension/content.js','utf8'),context);
  handler({type:'identify'},{id:'other'},()=>{});handler({type:'identify'},{id:'ext',tab:{id:1}},()=>{});handler(null,{id:'ext'},()=>{});assert.equal(calls,0);
  handler({type:'identify'},{id:'ext'},()=>{});assert.equal(calls,1);

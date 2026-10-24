@@ -7,6 +7,7 @@ const body={spreadsheetId:id,sheetName:"团队'表",accountUrl:'https://www.douy
 const config=()=>validate(body);
 const snapshot=()=>({dates:['','','2026-10-20','','','','2026-10-21'],accounts:[['https://www.douyin.com/user/abc/']],row:['','',100,0,50,0,109,9,44,-6],zone:'Asia/Shanghai',columnCount:20});
 const now=new Date('2026-10-21T10:00:00Z');
+test('与昨日相同明确写入零增长，两项总数仍写入',()=>{const s=snapshot();s.row[2]=110;s.row[4]=45;const p=planSync(config(),s,now);assert.deepEqual(p.values,[110,0,45,0]);assert.equal(p.data.length,4);assert.deepEqual(p.skipped,[]);});
 test('定位、负增长、转义工作表名及重复同步保持相同增长',()=>{
   const data=snapshot(), a=planSync(config(),data,now); assert.deepEqual(a.values,[110,10,45,-5]); assert.equal(a.data[0].range,"'团队''表'!G4");
   data.row.splice(6,4,...a.values); assert.deepEqual(planSync(config(),data,now).values,a.values);

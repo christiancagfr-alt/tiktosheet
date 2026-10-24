@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "TikTok / 抖音数据智能同步",
   "description": "自动读取登录账号的关注与粉丝数据，按账号和日期同步 Google Sheets。",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "permissions": [
     "storage",
     "alarms"

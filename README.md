@@ -1,4 +1,4 @@
-# TikTok / 抖音数据智能同步助手 0.4.2
+# TikTok / 抖音数据智能同步助手 0.4.3
 
 Chrome、Edge、Brave 共用的 Manifest V3 插件，通过 Google Apps Script 同步 Google 表格。已按用户选择移除 Node 中转后端，不再需要服务账号私钥或本机服务。
 
@@ -6,7 +6,7 @@ Chrome、Edge、Brave 共用的 Manifest V3 插件，通过 Google Apps Script �
 
 1. 从目标 Google 表格打开 Apps Script，按 [脚本安装说明](apps-script/安装说明.md) 安装完整的 [Code.gs](apps-script/Code.gs)。启用 Sheets 服务。新版 showConnection 在表格弹窗中显示连接，不再写入执行日志；显式清单须同步更新 appsscript.json 的界面权限。
 2. 更新已有脚本时，保存代码后到“部署 → 管理部署 → 编辑 → 新版本 → 部署”。保留脚本属性中的绑定 ID 和授权码，无需重新 setup 或轮换密钥。
-3. 解压 dist/tiktok-smart-sync-extension-v0.4.2.zip，在 chrome://extensions、edge://extensions 或 brave://extensions 开启开发者模式，加载包含 manifest.json 的目录。更新现有安装则替换原目录文件后重新加载，再刷新 TikTok／抖音页面。
+3. 解压 dist/tiktok-smart-sync-extension-v0.4.3.zip，在 chrome://extensions、edge://extensions 或 brave://extensions 开启开发者模式，加载包含 manifest.json 的目录。更新现有安装则替换原目录文件后重新加载，再刷新 TikTok／抖音页面。
 4. 旧 Node 地址不会继续工作。请在插件保存脚本完整连接、表格链接和工作表名称。完整连接含授权码，不要公开分享。
 
 ## 数据定位
@@ -40,3 +40,9 @@ Chrome、Edge、Brave 共用的 Manifest V3 插件，通过 Google Apps Script �
 当前未发现真实硬编码密钥，未检查云端日志、部署及浏览器本地存储。旧版 showConnection 会将密钥写入日志；若日志或连接已外泄，必须撤销/轮换对应凭据，只删除本地代码不足以阻断访问。
 
 历史 dist 文件保留作回溯，未经本轮修复，不要继续分发。每个浏览器固定账号绑定的方案尚待用户决定，现有 DOM 自动身份识别不能作为服务端授权凭证。
+
+## v0.4.3 更新
+
+定时和手动同步均先刷新本人主页（绕过浏览器缓存），只接受新文档加载后的精确计数；刷新失败或超时不写入。平台自身缓存及统计延迟不由插件控制。增长按昨日计算，不变写 0、减少写负数、昨日为空跳过增长格。
+
+沿用原加载目录更新后，在扩展管理页点击重新加载，并刷新一次网站；无需卸载或重新配置。Apps Script 协议及逻辑未改变，已部署 v0.4.2 脚本不必重新部署。

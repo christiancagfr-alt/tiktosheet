@@ -5,19 +5,25 @@ import '../extension/account.js';
 const own='https://www.douyin.com/user/owner';
 const other='https://www.douyin.com/user/other';
 const opts={attempts:2,delay:async()=>{}};
-function fake({identity=own,counts=[12,3],switchAccount=false,conflict=false,loading=false}={}) {
-  let reads=0,identified=0; const created=[],removed=[];
-  return {created,removed,tabs:{
-    query:async()=>[{id:1,url:other,windowId:1},...(conflict?[{id:2,url:own,windowId:1}]:[])],
+function fake({identity=own,counts=[12,3],switchAccount=false,conflict=false,loading=false,existing=false,stale=false,neverLoaded=false,reloadFails=false}={}) {
+  let reads=0,identified=0,reloaded=false; const created=[],removed=[],reloads=[];
+  return {created,removed,reloads,tabs:{
+    query:async()=>[{id:1,url:existing?own:other,windowId:1},...(conflict?[{id:2,url:own,windowId:1}]:[])],
+    get:async()=>({status:neverLoaded?'loading':'complete'}),
+    reload:async(id,options)=>{reloads.push({id,options});if(reloadFails)throw new Error('reload failed');reloaded=true;},
     create:async options=>{created.push(options);return {id:3};},
     remove:async id=>{removed.push(id);},
     sendMessage:async(id,m)=>{
-      if(m.type==='identify') {identified++;return {ok:true,data:{accountUrl:conflict&&id===2?other:switchAccount&&identified>1?other:identity}};}
+      if(m.type==='identify') {identified++;return {ok:true,documentId:reloaded?'new':'old',data:{accountUrl:conflict&&id===2?other:switchAccount&&identified>1?other:identity}};}
       reads++; if(loading&&reads===1)throw new Error('not ready');
-      return {ok:true,data:{accountUrl:own,following:counts[0],friends:counts[1]}};
+      return {ok:true,documentId:stale?'old':'new',data:{accountUrl:own,following:counts[0],friends:counts[1]}};
     }
   }};
 }
+test('已有本人主页绕过缓存刷新，保留用户标签页',async()=>{const api=fake({existing:true});await readSignedInAccount(api,{},opts);assert.deepEqual(api.reloads,[{id:1,options:{bypassCache:true}}]);assert.deepEqual(api.created,[]);assert.deepEqual(api.removed,[]);});
+test('刷新后仍收到旧文档数据时拒绝返回',async()=>{const api=fake({existing:true,stale:true});await assert.rejects(()=>readSignedInAccount(api,{},opts),/未能取得最新数据/);assert.deepEqual(api.removed,[]);});
+test('刷新失败不回退到旧数据',async()=>{const api=fake({existing:true,reloadFails:true});await assert.rejects(()=>readSignedInAccount(api,{},opts),/reload failed/);});
+test('页面加载超时拒绝返回并关闭临时页',async()=>{const api=fake({neverLoaded:true});await assert.rejects(()=>readSignedInAccount(api,{},opts),/未能取得最新数据/);assert.deepEqual(api.removed,[3]);assert.deepEqual(api.reloads,[]);});
 test('浏览他人主页时自动打开本人主页，读取后关闭',async()=>{const api=fake({loading:true});const d=await readSignedInAccount(api,{},opts);assert.equal(d.accountUrl,own);assert.equal(api.created[0].url,own);assert.equal(api.created[0].active,false);assert.deepEqual(api.removed,[3]);});
 test('无本人入口时不回退到当前他人主页',async()=>{const api=fake({identity:null});await assert.rejects(()=>readSignedInAccount(api,{},opts),/未找到/);assert.equal(api.created.length,0);});
 test('多标签页登录身份冲突停止读取',async()=>{const api=fake({conflict:true});await assert.rejects(()=>readSignedInAccount(api,{},opts),/不同登录账号/);assert.equal(api.created.length,0);});
